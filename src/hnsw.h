@@ -369,6 +369,28 @@ typedef struct HnswVacuumState
 	MemoryContext tmpCtx;
 }			HnswVacuumState;
 
+typedef struct HnswTraceNodeInfo
+{
+	uint8			level;
+	BlockNumber		blkno;
+	OffsetNumber	offno;
+	float			distance;
+}			HnswTraceNodeInfo;
+
+typedef struct HnswTraceEdgeInfo
+{
+	BlockNumber		srcBlkno;
+	OffsetNumber	srcOffno;
+	BlockNumber		dstBlkno;
+	OffsetNumber	dstOffno;
+}			HnswTraceEdgeInfo;
+
+typedef struct HnswTraceInfo
+{
+	List	*nodes;
+	List	*edges;
+}			HnswTraceInfo;
+
 /* Methods */
 int			HnswGetM(Relation index);
 int			HnswGetEfConstruction(Relation index);
@@ -378,7 +400,7 @@ bool		HnswCheckNorm(FmgrInfo *procinfo, Oid collation, Datum value);
 Buffer		HnswNewBuffer(Relation index, ForkNumber forkNum);
 void		HnswInitPage(Buffer buf, Page page);
 void		HnswInit(void);
-List	   *HnswSearchLayer(char *base, Datum q, List *ep, int ef, int lc, Relation index, FmgrInfo *procinfo, Oid collation, int m, bool inserting, HnswElement skipElement);
+List	   *HnswSearchLayer(char *base, Datum q, List *ep, int ef, int lc, Relation index, FmgrInfo *procinfo, Oid collation, int m, bool inserting, HnswElement skipElement, HnswTraceInfo *trace);
 HnswElement HnswGetEntryPoint(Relation index);
 void		HnswGetMetaPageInfo(Relation index, int *m, HnswElement * entryPoint);
 void	   *HnswAlloc(HnswAllocator * allocator, Size size);
@@ -399,6 +421,8 @@ void		HnswUpdateConnection(char *base, HnswElement element, HnswCandidate * hc, 
 void		HnswLoadNeighbors(HnswElement element, Relation index, int m);
 void		HnswInitLockTranche(void);
 const		HnswTypeInfo *HnswGetTypeInfo(Relation index);
+HnswTraceInfo *HnswInitTraceInfo(void);
+void		HnswAddTraceEdge(char *base, HnswCandidate *src, HnswCandidate *dst, int lc, HnswTraceInfo *trace);
 PGDLLEXPORT void HnswParallelBuildMain(dsm_segment *seg, shm_toc *toc);
 
 /* Index access methods */

@@ -717,7 +717,7 @@ CountElement(char *base, HnswElement skipElement, HnswCandidate * hc)
  * Algorithm 2 from paper
  */
 List *
-HnswSearchLayer(char *base, Datum q, List *ep, int ef, int lc, Relation index, FmgrInfo *procinfo, Oid collation, int m, bool inserting, HnswElement skipElement)
+HnswSearchLayer(char *base, Datum q, List *ep, int ef, int lc, Relation index, FmgrInfo *procinfo, Oid collation, int m, bool inserting, HnswElement skipElement, HnswTraceInfo *trace)
 {
 	List	   *w = NIL;
 	pairingheap *C = pairingheap_allocate(CompareNearestCandidates, NULL);
@@ -819,6 +819,9 @@ HnswSearchLayer(char *base, Datum q, List *ep, int ef, int lc, Relation index, F
 
 					pairingheap_add(C, &(CreatePairingHeapNode(ec)->ph_node));
 					pairingheap_add(W, &(CreatePairingHeapNode(ec)->ph_node));
+
+					if (trace != NULL)
+						HnswAddTraceEdge(base, c, ec, lc, trace);
 
 					/*
 					 * Do not count elements being deleted towards ef when
@@ -1224,7 +1227,7 @@ HnswFindElementNeighbors(char *base, HnswElement element, HnswElement entryPoint
 	/* 1st phase: greedy search to insert level */
 	for (int lc = entryLevel; lc >= level + 1; lc--)
 	{
-		w = HnswSearchLayer(base, q, ep, 1, lc, index, procinfo, collation, m, true, skipElement);
+		w = HnswSearchLayer(base, q, ep, 1, lc, index, procinfo, collation, m, true, skipElement, NULL);
 		ep = w;
 	}
 
@@ -1242,7 +1245,7 @@ HnswFindElementNeighbors(char *base, HnswElement element, HnswElement entryPoint
 		List	   *neighbors;
 		List	   *lw;
 
-		w = HnswSearchLayer(base, q, ep, efConstruction, lc, index, procinfo, collation, m, true, skipElement);
+		w = HnswSearchLayer(base, q, ep, efConstruction, lc, index, procinfo, collation, m, true, skipElement, NULL);
 
 		/* Elements being deleted or skipped can help with search */
 		/* but should be removed before selecting neighbors */

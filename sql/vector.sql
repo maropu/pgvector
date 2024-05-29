@@ -892,3 +892,8 @@ CREATE OPERATOR CLASS sparsevec_l1_ops
 	OPERATOR 1 <+> (sparsevec, sparsevec) FOR ORDER BY float_ops,
 	FUNCTION 1 l1_distance(sparsevec, sparsevec),
 	FUNCTION 3 hnsw_sparsevec_support(internal);
+
+-- visualization functions
+
+CREATE FUNCTION hnsw_visualize(regclass, q vector, ef int default 64) RETURNS bool
+	AS 'MODULE_PATHNAME' LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
