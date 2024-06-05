@@ -61,7 +61,7 @@ def print_as_graphviz_format(filename, layout):
     graph = None
 
     try:
-        with open('hnsw_graph.json', 'r') as f:
+        with open(filename, 'r') as f:
           graph = json.load(f)
     except Exception as e:
         raise Exception(f'Cannot open {filename}: {e}')
